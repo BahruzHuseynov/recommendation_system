@@ -3,5 +3,3 @@ uvicorn[standard]
 pandas
 numpy
 scikit-learn
-re
-glob
