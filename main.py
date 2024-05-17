@@ -43,6 +43,7 @@ def TDEE(gender, weight, height, age, activity, goal):
 
 def meal_time(tdee, consumed_calorie, meal_type):
     meals = {
+        "snack": [0.1, random.uniform(0.9, 1.1)],
         "breakfast": [0.22, random.uniform(0.9, 1)],
         "lunch":[0.31, random.uniform(1, 1.1)],
         "dinner":[0.35, random.uniform(0.95, 1.05)]
@@ -55,6 +56,8 @@ def meal_time(tdee, consumed_calorie, meal_type):
     if left_cals <= 0:
         return -1
     
+    if meal_type == "snack":
+        return left_cals * meal[0] * meal[1]
     if meal_type == "lunch":
         return left_cals * meal[0] * meal[1]
     return left_cals * meal[1]
@@ -70,6 +73,9 @@ def category_determination(data, goal, meal_type):
     
     ls_w = ["lunch", "beverages", "chicken", "fruits", "special_dietary", "vegetables"]
     other = ["lunch", "beverages", "chicken", "meat", "fish_and_seafood", "international", "others"]
+    
+    if meal_type == "snack":
+        return data[data["RecipeCategory"].isin(["lunch", "fruits", "dessert"])]
     
     if meal_type == "lunch":
         if goal == "lose weight":
@@ -185,11 +191,21 @@ def user_preference_list(data, age, weight, height, gender, goal, activity, cons
     knn1.fit(X_scaled)
     knn2.fit(X_scaled)
 
+    if activity in ["sedentary", "lightly active"]:
+        time_short = 0
+        time_middle = 0
+    elif activity in ["moderately active", "very active"]:
+        time_short = 0
+        time_middle = 1
+    else:
+        time_short = 1
+        time_middle = 0
+        
     user_preferences = {
         'Calories':tdee_per_meal, 'FatContent':u_fat, 'SaturatedFatContent':u_sat_fat,
         'CholesterolContent':u_cholesterol, 'SodiumContent':u_sodium, 
        'CarbohydrateContent':u_carb, 'FiberContent':u_fiber, 'SugarContent':u_sugar,
-       'ProteinContent':u_protein, 'Time_middle':0, 'Time_short':1
+       'ProteinContent':u_protein, 'Time_middle':time_middle, 'Time_short':time_short
     }
 
     user_df = pd.DataFrame(user_preferences, index=[0])
